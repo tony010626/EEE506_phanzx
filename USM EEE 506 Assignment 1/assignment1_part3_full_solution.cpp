@@ -1,6 +1,6 @@
 /*
  The main execution part
- */
+*/
 
 #include <iostream>
 #include <cstdlib>
@@ -8,67 +8,78 @@
 
 using namespace std;
 
-// unsigned char: 8-bit (0-255), exact fit for grayscale pixels
-unsigned char** allocateImage(int rows, int cols);
-void freeImage(unsigned char** image, int rows);
-void printImage(unsigned char** image, int rows, int cols);
-void applyFilter(unsigned char** image, int rows, int cols, int adjustmentValue);
-void applyFilter(unsigned char** image, int rows, int cols, int* rowExposure);
+// int** is used because the assignment requires a dynamically allocated 2D array of integers
+int** allocateImage(int rows, int cols);
+void freeImage(int** image, int rows);
+void printImage(int** image, int rows, int cols);
+void applyFilter(int** image, int rows, int cols, int adjustmentValue);
+void applyFilter(int** image, int rows, int cols, int* rowExposure);
 
 // ── allocateImage ─────────────────────────────────────────────────────────────
-unsigned char** allocateImage(int rows, int cols)
+int** allocateImage(int rows, int cols)
 {
-    unsigned char** image = new unsigned char*[rows];
+    int** image = new int*[rows];
 
     for (int i = 0; i < rows; i++)
-        image[i] = new unsigned char[cols];
+    {
+        image[i] = new int[cols];
+    }
 
     return image;
 }
 
 // ── freeImage ─────────────────────────────────────────────────────────────────
-void freeImage(unsigned char** image, int rows)
+void freeImage(int** image, int rows)
 {
     for (int i = 0; i < rows; i++)
+    {
         delete[] image[i];
+    }
 
     delete[] image;
 }
 
 // ── printImage ────────────────────────────────────────────────────────────────
-void printImage(unsigned char** image, int rows, int cols)
+void printImage(int** image, int rows, int cols)
 {
     cout << "\n+-- Image Grid (" << rows << " x " << cols << ") --+" << endl;
+
     for (int i = 0; i < rows; i++)
     {
         cout << "| ";
+
         for (int j = 0; j < cols; j++)
         {
-            cout << (int)image[i][j];
-            if (j < cols - 1) cout << "\t";
+            cout << image[i][j];
+
+            if (j < cols - 1)
+            {
+                cout << "\t";
+            }
         }
+
         cout << " |" << endl;
     }
+
     cout << "+----------------------------+" << endl;
 }
 
 // ── applyFilter: Version 1 – Uniform Brightness ───────────────────────────────
-void applyFilter(unsigned char** image, int rows, int cols, int adjustmentValue)
+void applyFilter(int** image, int rows, int cols, int adjustmentValue)
 {
     for (int i = 0; i < rows; i++)
     {
-        unsigned char* rowPtr = image[i];
+        int* rowPtr = image[i];
 
         for (int j = 0; j < cols; j++)
         {
-            int result = *(rowPtr + j) + adjustmentValue;
-            *(rowPtr + j) = (result > 255) ? 255 : (unsigned char)result;
+            *(rowPtr + j) = *(rowPtr + j) + adjustmentValue;
         }
     }
 }
 
 // ── applyFilter: Version 3 – Row-Specific Exposure ────────────────────────────
-void applyFilter(unsigned char** image, int rows, int cols, int* rowExposure)
+void applyFilter(int** image, int rows, int cols, int* rowExposure)
 {
     for (int i = 0; i < rows; i++)
     {
@@ -76,8 +87,7 @@ void applyFilter(unsigned char** image, int rows, int cols, int* rowExposure)
 
         for (int j = 0; j < cols; j++)
         {
-            int result = image[i][j] + exposure;
-            image[i][j] = (result > 255) ? 255 : (unsigned char)result;
+            image[i][j] = image[i][j] + exposure;
         }
     }
 }
@@ -89,6 +99,7 @@ int main()
 
     // Step 1: Prompt user for image dimensions
     int rows, cols;
+
     cout << "=== EEE506 Assignment 1 - Embedded Image Processing ===" << endl;
     cout << "Enter number of rows    : ";
     cin >> rows;
@@ -96,11 +107,15 @@ int main()
     cin >> cols;
 
     // Step 2: Dynamically allocate 2D image and fill with random pixels 0-255
-    unsigned char** image = allocateImage(rows, cols);
+    int** image = allocateImage(rows, cols);
 
     for (int i = 0; i < rows; i++)
+    {
         for (int j = 0; j < cols; j++)
+        {
             image[i][j] = rand() % 256;
+        }
+    }
 
     cout << "\n--- Initial Image ---";
     printImage(image, rows, cols);
@@ -109,12 +124,18 @@ int main()
     int* rowExposure = new int[rows];
 
     cout << "\n[INFO] Row exposure values: ";
+
     for (int i = 0; i < rows; i++)
     {
         rowExposure[i] = (i + 1) * 10;   // 10, 20, 30, ...
         cout << rowExposure[i];
-        if (i < rows - 1) cout << ", ";
+
+        if (i < rows - 1)
+        {
+            cout << ", ";
+        }
     }
+
     cout << endl;
 
     // Step 4a: Apply Version 1 - Uniform Brightness
